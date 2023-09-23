@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1695175246 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
+	<iostream>
+	<winsock2.h>
+	<vector>
+	<fstream>
+	<sstream>
+
+1584205420 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\main.cpp
+	<iostream>
+
