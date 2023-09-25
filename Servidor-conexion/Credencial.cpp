@@ -3,8 +3,11 @@
 #include <fstream>
 #include <sstream>
 #include <list>
+#include "Credencial.h"
+
 
 using namespace std;
+
 
 class Credencial {
 private:
@@ -24,7 +27,6 @@ public:
   string getUsuario() const {
     return usuario;
 }
-
 string getRol() const {
     return rol;
 }
@@ -74,21 +76,33 @@ list<Credencial> FuncionArchivoEnEstructura() {
     return credenciales;
 }
 
-/*
-
-string buscadorDeUsuario(list<Credencial> credencial,string usuario){
 
 
-
-
+bool buscadorDeUsuario(list<Credencial> credencial,string usuario){
+    bool valor=false;
+for (Credencial credencial:credencial) {
+if(credencial.getUsuario()==usuario){
+    valor=true;
 }
-*/
+}
+return valor;
+}
 
 
-
-
+bool verificarContrasenia(list<Credencial> credencial,string usuario,string contra){
+    bool valor=false;
+for (Credencial credencial:credencial) {
+if(credencial.getUsuario()==usuario){
+    if(credencial.getContra()==contra){
+        valor=true;
+    }
+}
+}
+return valor;
+}
 
 /*
+
 int main() {
     list<Credencial> credencial = FuncionArchivoEnEstructura();
 
@@ -101,5 +115,5 @@ int main() {
     }
 
     return 0;
-}
-*/
+}*/
+

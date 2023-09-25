@@ -1,11 +1,42 @@
 # depslib dependency file v1.0
-1695175246 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
+1695590772 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
 	<iostream>
 	<winsock2.h>
 	<vector>
 	<fstream>
 	<sstream>
+	<list>
+	"Credencial.cpp"
 
 1584205420 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\main.cpp
+	<iostream>
+
+1695590137 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<list>
+	"Credencial.h"
+
+1695591298 c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<list>
+	"Credencial.h"
+
+1695583988 c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
+	<iostream>
+	<winsock2.h>
+	<vector>
+	<fstream>
+	<sstream>
+	"Credencial.cpp"
+
+1695590211 c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.h
+	<string>
+	<list>
 	<iostream>
 
