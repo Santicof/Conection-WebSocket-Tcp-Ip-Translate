@@ -4,7 +4,8 @@
 #include <fstream>   // Agrega esta línea
 #include <sstream>
 #include <list>
-#include "Credencial.cpp"
+#include "Credencial.h"
+
 using namespace std;
 
 class Servidor{
@@ -13,6 +14,7 @@ public:
     SOCKET server,client;
     SOCKADDR_IN serverAddr,clientAddr;
     char buffer[1024];
+    //string buffer;
     Servidor(){
 
     WSAStartup(MAKEWORD(2,0),&WSAData);
@@ -102,16 +104,14 @@ public:
 
 
 
-//Función para cargar credenciales desde un archivo
-
-
 
     };
-/*
+
     int main(){
-   // Servidor *Servidorr =new Servidor();
 
+   Servidor *Servidorr =new Servidor();
 
+/*
     // Cargar las credenciales desde el archivo
 
 
@@ -119,15 +119,15 @@ public:
 list<Credencial> credencial = FuncionArchivoEnEstructura();
 
     for (Credencial credencial:credencial) {
-        cout << "Usuario: " << credencial.getUsuario() << endl;
-        cout << "Contrasenia: " << credencial.getContra() << endl;
-        cout << "Rol: " << credencial.getRol() << endl;
-        cout << "Bloqueos: " << credencial.getBloqueos() << endl;
+        cout << "Usuario: " << credencial.usuario << endl;
+        cout << "Contrasenia: " << credencial.contra << endl;
+        cout << "Rol: " << credencial.rol << endl;
+        cout << "Bloqueos: " << credencial.bloqueos << endl;
         cout << "-----------------------" << endl;
-    }/*
+    }/**/
     Servidorr->Credenciales(Servidorr);
         Servidorr->Recibir();
         Servidorr->Enviar();
-    }
+
     return 0;
-    }*/
+    }

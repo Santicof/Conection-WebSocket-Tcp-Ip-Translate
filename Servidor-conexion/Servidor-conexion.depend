@@ -40,3 +40,36 @@
 	<list>
 	<iostream>
 
+1695672026 source:c:\users\scofman\onedrive - andreani logistica sa\escritorio\conexion-servidor-tcp-ip\servidor-conexion\credencial.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<list>
+	<string>
+
+1695671001 c:\users\scofman\onedrive - andreani logistica sa\escritorio\conexion-servidor-tcp-ip\servidor-conexion\credencial.h
+	<string>
+	<list>
+	<iostream>
+
+1695666588 source:c:\users\scofman\onedrive - andreani logistica sa\escritorio\conexion-servidor-tcp-ip\servidor-conexion\main.cpp
+	<iostream>
+
+1695672536 source:c:\users\scofman\onedrive - andreani logistica sa\escritorio\conexion-servidor-tcp-ip\servidor-conexion\servidor.cpp
+	<iostream>
+	<winsock2.h>
+	<vector>
+	<fstream>
+	<sstream>
+	<list>
+	"Credencial.h"
+
+1695666588 c:\users\scofman\onedrive - andreani logistica sa\escritorio\conexion-servidor-tcp-ip\servidor-conexion\credencial.cpp
+	<iostream>
+	<vector>
+	<fstream>
+	<sstream>
+	<list>
+	"Credencial.h"
+

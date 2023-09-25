@@ -1,4 +1,4 @@
-/*#ifndef CREDENCIAL_H
+#ifndef CREDENCIAL_H
 #define CREDENCIAL_H
 
 #include <string>
@@ -6,24 +6,17 @@
 #include <iostream>
 
 
-class Credencial {
-private:
-    string usuario;
-    string contra;
-    string rol;
-    int bloqueos;
 
-public:
-    Credencial(string usuarioo, string contraa, string roll, int bloqueoo);
+struct Credencial {
 
+    std::string usuario;
+    std::string contra;
+    std::string rol;
+    int bloqueos;};
 
-    string getRol();
-    string getContra();
-    int getBloqueos();
-};
-list<Credencial> FuncionArchivoEnEstructura();
-bool buscadorDeUsuario(list<Credencial> credencial, string usuario);
-bool verificarContrasenia(list<Credencial> credencial, string usuario, string contra);
+std::list<Credencial> FuncionArchivoEnEstructura();
+bool buscadorDeUsuario(std::list<Credencial> credencial, std::string usuario);
+bool verificarContrasenia(std::list<Credencial> credencial, std::string usuario, std::string contra);
 
 #endif // CREDENCIAL_H
-*/
+
