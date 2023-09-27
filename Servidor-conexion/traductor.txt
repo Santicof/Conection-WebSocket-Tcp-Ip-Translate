@@ -1,3 +1,4 @@
 dog:perro
-person:persona
-black:negro
+
+potato:papa
+plant:planta

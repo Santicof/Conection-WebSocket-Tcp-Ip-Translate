@@ -5,6 +5,7 @@
 #include <sstream>
 #include <list>
 #include "Credencial.h"
+#include <algorithm> // Necesario para std::transform
 
 using namespace std;
 
@@ -131,7 +132,7 @@ void Traductor(const std::string& palabra) {
     }
 
     if (!encontrada) {
-        std::cout << "La palabra " << palabra << " no fue encontrada en el archivo de traducciones." << std::endl;
+        std::cout << "No fue posible encontrar la traducción para: " << palabra << std::endl;
     }
 }
 
@@ -156,14 +157,88 @@ void TraductorCliente(){
     std::cout << "Palabra a Traducir: " << buffer << std::endl;
     std::cout << "Traduzco entonces..." << std::endl;
 
-    Traductor(buffer);
+//    Traductor(buffer);
+      Traductor(ConvertirAMinusculas(buffer));//se convierte el texto antes de buscar
 }
-  };
+
+
+
+
+
+std::string ConvertirAMinusculas(const std::string& texto) {
+    std::string resultado = texto;
+    std::transform(resultado.begin(), resultado.end(), resultado.begin(), ::tolower);
+    return resultado;
+}
+
+
+
+
+
+  //INSERTAR TRADUCCIONNN
+
+    void InsertarTraduccion() {
+
+        FILE *puntero;
+        puntero = fopen ("traductor.txt", "a");
+
+        string palabraTraduccion;
+
+        char aux[50];
+        string pala;
+        const char* mensaje = "Escribe la nueva traduccion, separado las palabras con un ( : )\n";
+    send(client, mensaje, strlen(mensaje), 0);
+        int bytesRecibidos = recv(client, aux, sizeof(aux), 0);
+pala=aux;
+
+        // Verificar que las palabras no estén vacías
+    if (pala.empty() ) {
+       mensaje= "\nError: Las palabras deben tener contenido.";
+        send(client, mensaje, strlen(mensaje), 0);
+        return;
+    }
+
+    // Verificar que las palabras no contengan ':' para cumplir con el formato
+    if (pala.find(':')==std::string::npos ) {
+
+        mensaje= "\nError: Las palabras deben tener el caracter ':'.\n";
+        send(client, mensaje, strlen(mensaje), 0);
+        return;
+    }else{
+
+        if (bytesRecibidos <= 0) {
+            std::cout << "ERROR" << std::endl; //me da este error revisar!
+            } else {
+            aux[bytesRecibidos] = '\0'; // Añadir terminador nulo para convertirlo en una cadena de C válida
+            // Ahora 'aux' contiene los datos recibidos desde el socket
+            }
+
+            std::cout << aux << std::endl;
+
+            //escribe
+            mensaje= "\nMENSAJE AGREGADO CORRECTAMEN AL ARCHIVO DE TRADUCCIONES!!\n";
+        send(client, mensaje, strlen(mensaje), 0);
+           // Agrega un carácter de nueva línea al final del arreglo aux
+        fprintf(puntero,"\n");
+       aux= ConvertirAMinusculas(aux);
+            fprintf(puntero, "%s", aux);
+    }
+            fclose(puntero);
+
+    }};
+
+
+
+
+
+
+
+
 
     int main(){
 
  Servidor *Servidorr =new Servidor();
-
+//Servidorr->InsertarTraduccion();
 
      Servidorr->TraductorCliente();
     // Cargar las credenciales desde el archivo
@@ -172,7 +247,7 @@ void TraductorCliente(){
     // Imprimir las credenciales cargadas (solo como ejemplo)
 list<Credencial> credencial = FuncionArchivoEnEstructura();
 
-    Servidorr->Credenciales(Servidorr);
+   // Servidorr->Credenciales(Servidorr);
        // Servidorr->Recibir();
         //Servidorr->Enviar();
 
