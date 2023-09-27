@@ -6,6 +6,7 @@
 #include <list>
 #include "Credencial.h"
 #include <algorithm> // Necesario para std::transform
+//BUENA PRACTICA FUNCIONES EN MINUSCULA
 
 using namespace std;
 
@@ -101,7 +102,31 @@ printf("QUE BUSCO: %s", servidor->buffer);
 */
 }
 
+bool buscarPalabra(const std::string& palabra){
+    //REUTILIZACION DE CODIGO EN FUNCION TRADUCTOR()
+ std::ifstream file("traductor.txt");
 
+    if (!file) {
+        std::cerr << "Error al abrir el archivo de traductor." << std::endl;
+
+    }
+
+    std::string linea;
+    bool encontrada = false;
+    while (std::getline(file, linea)) {
+        std::istringstream iss(linea);
+        std::string palaEspa;
+        std::string palaIngles;
+
+        if (std::getline(iss, palaIngles, ':') && std::getline(iss, palaEspa)) {
+            if (palaEspa == palabra||palabra==palaIngles) {
+                encontrada = true;
+
+            }
+        }
+    }
+    return encontrada;
+}
 
 
 
@@ -134,6 +159,7 @@ void Traductor(const std::string& palabra) {
     if (!encontrada) {
         std::cout << "No fue posible encontrar la traducción para: " << palabra << std::endl;
     }
+
 }
 
 
@@ -197,6 +223,14 @@ pala=aux;
         send(client, mensaje, strlen(mensaje), 0);
         return;
     }
+    //VERIFICA SI ESTA LA PALABRA YA ESTA ESCRITA EN EL TRADUCTOR
+    if (buscarPalabra(pala)==true) {
+            //creo un string para convertir en char
+       string mensajeAux="\nYa existe una traducción para LA PALABRA:"+ pala;
+    mensaje=mensajeAux.c_str();
+        send(client, mensaje, strlen(mensaje), 0);
+        return;
+    }
 
     // Verificar que las palabras no contengan ':' para cumplir con el formato
     if (pala.find(':')==std::string::npos ) {
@@ -220,8 +254,12 @@ pala=aux;
         send(client, mensaje, strlen(mensaje), 0);
            // Agrega un carácter de nueva línea al final del arreglo aux
         fprintf(puntero,"\n");
-       aux= ConvertirAMinusculas(aux);
-            fprintf(puntero, "%s", aux);
+       string auxi=ConvertirAMinusculas(aux);
+     // Convertir el std::string a un arreglo de caracteres (const char*)
+    const char* auxiChar = auxi.c_str();
+
+
+            fprintf(puntero, auxiChar);
     }
             fclose(puntero);
 
@@ -235,10 +273,11 @@ pala=aux;
 
 
 
+
     int main(){
 
  Servidor *Servidorr =new Servidor();
-//Servidorr->InsertarTraduccion();
+Servidorr->InsertarTraduccion();
 
      Servidorr->TraductorCliente();
     // Cargar las credenciales desde el archivo

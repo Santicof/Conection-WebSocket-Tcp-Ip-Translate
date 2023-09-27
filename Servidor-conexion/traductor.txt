@@ -2,3 +2,4 @@ dog:perro
 
 potato:papa
 plant:planta
+paka:alta
