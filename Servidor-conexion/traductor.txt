@@ -1,0 +1,3 @@
+dog:perro
+person:persona
+black:negro

@@ -56,7 +56,8 @@ bool buscadorDeUsuario(list<Credencial> credenciales, string usuario) {
     bool valor = false;
     for (Credencial credencial : credenciales) {
         if (credencial.usuario == usuario) {
-            valor = true;
+                printf("SE ENCONTROOO");
+            valor=true;
         }
     }
     return valor;
@@ -73,11 +74,19 @@ bool verificarContrasenia(list<Credencial> credenciales, string usuario, string 
     }
     return valor;
 }
+/*
+void AltaDeUsuario(FILE * puntero,string usuario,string contra,string bloqueos,string rol){
+ifstream file("credenciales.txt");
 
+    if (!file) {
+        cerr << "Error al abrir el archivo de credenciales." << endl;
+        return credenciales;
+    }
+}*/
 /*
 int main() {
     list<Credencial> credenciales = FuncionArchivoEnEstructura();
-
+bool valor;
     for (Credencial credencial : credenciales) {
         cout << "Usuario: " << credencial.usuario << endl;
         cout << "Contrasenia: " << credencial.contra << endl;
@@ -85,7 +94,12 @@ int main() {
         cout << "Bloqueos: " << credencial.bloqueos << endl;
         cout << "-----------------------" << endl;
     }
+    string linea="persona1";
+    valor=buscadorDeUsuario(credenciales,linea);
+    printf("valor: %d",valor);
 
     return 0;
 }
+
+
 */
