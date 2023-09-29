@@ -1,3 +1,5 @@
 persona1|potasio|rol|3
 persona2|PIZZA|rol|3
 persona3|tos8|rol|3
+persona1|kk|CONSULTA|0
+juan|paracaidas|CONSULTA|0

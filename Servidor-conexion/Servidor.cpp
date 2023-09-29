@@ -16,6 +16,7 @@ public:
     SOCKET server,client;
     SOCKADDR_IN serverAddr,clientAddr;
     char buffer[1024];
+    char buffer2[1024];
     //string buffer;
     Servidor(){
 
@@ -32,9 +33,10 @@ public:
     if((client=accept(server,(SOCKADDR *)&clientAddr,&clientAddrSize)) != INVALID_SOCKET){
         cout<< "Cliente conectado!" << endl;
     }
-
     }
 /*
+
+
     void Recibir(){
     recv(client,buffer,sizeof(buffer),0);
     cout<< "EL CLIENTE DICE : "<< buffer <<endl;
@@ -50,58 +52,59 @@ public:
     cout<< "Mensaje enviado!"<<endl;
     }
 
-
+*/
     void CerrarSocket(){
     closesocket(client);
     cout<<"Socket cerrado,cliente desconectado."<<endl;
     }
-*/
+
   void Credenciales(Servidor* servidor) {
      list<Credencial> credencial=FuncionArchivoEnEstructura();
       bool valor=false;
   bool valor2=false;
     int intentos=0;
-    //while(valor!=true){
+    while(valor!=true){
+            //envio
    send(client,"Nombre Usuario?",sizeof(buffer),0);
     memset(buffer,0,sizeof(buffer));
  cout << "Mensaje enviado!" << endl;
     // -----------recibo-----------
-    recv(servidor->client, servidor->buffer, sizeof(servidor->buffer), 0);
-    cout << "EL CLIENTE DICE : " << servidor->buffer << endl;
- valor=buscadorDeUsuario(credencial,buffer);//busca dentro de la lista string  al usuario
-    printf("VALOR : %d",valor);
+     int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
+     buffer[bytesRecibidos] = '\0';
+     cout << "EL CLIENTE DICE : " << servidor->buffer << endl;
+     char usuario[sizeof(buffer)];// variable para guardar el usuario
+     strcpy(usuario,buffer);//copio el usuario del buffer a la variable y poder buscarla en funciones
+ valor=buscadorDeUsuario(credencial,buffer);//busca dentro de la lista string  al usuario devuelve booleano
 
-printf("QUE BUSCO: %s", servidor->buffer);
+   memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
+ //--------contraseña--------------------
+    if(valor==true){//verifica y avisa
+
+//mensaje
+ while(valor2==false){
+    send(client,"Usuario Encontrado!\n Escriba la Contrasenia:",sizeof(buffer),0);
+ // recibo  REVISAR
+int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
+     buffer[bytesRecibidosD] ='\0';
+       memset(buffer,0,sizeof(buffer));
+     recv(client, buffer, sizeof(buffer) - 1, 0);
+
+      cout << "EL CLIENTE DICE : " << buffer << endl;
+      valor2= verificarContrasenia(credencial,usuario,servidor->buffer);
+    }
+      printf("QUE BUSCO USUARIO: %s",usuario);
+       printf("QUE BUSCO BUFFER: %s",buffer);
+      printf("VALOR del booleano contra : %d",valor2);
    memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
 
-    if(valor==true){//verifica y avisa
-    send(client,"Usuario Encontrado!",sizeof(buffer),0);
-    }else{
-        send(client,"Usuario  no Encontrado! :( ",sizeof(buffer),0);
-    }
+ }else{
+        send(client,"Usuario  no Encontrado! :(,vuelve a intentar",sizeof(buffer),0);
 
-/*
-    //--------contraseña--------------------
-    //agregar condicion de intentos &&
+ }
 
-  //  if (valor == true) {
-  string buscar;
-            while(valor2!=true ){
-        send(client,"Contrasenia?",sizeof(buffer),0);
-    memset(buffer,0,sizeof(buffer));
-        cout << "Mensaje enviado!" << endl;
-        // -----------recibo-----------
-        recv(servidor->client, servidor->buffer, sizeof(servidor->buffer), 0);
-        cout << "EL CLIENTE DICE : " << servidor->buffer << endl;
-      valor2= verificarContrasenia(credencial,"persona1","potasio");
-      printf("VALOR : %d",valor2);
-
-printf("QUE BUSCO: %s", servidor->buffer);
-        memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
-    }
-*/
 }
-
+    }
+//-----------------BUCADOR DE PALABRA PARA LA TRADUCCION--------------------------
 bool buscarPalabra(const std::string& palabra){
     //REUTILIZACION DE CODIGO EN FUNCION TRADUCTOR()
  std::ifstream file("traductor.txt");
@@ -129,9 +132,102 @@ bool buscarPalabra(const std::string& palabra){
 }
 
 
+//-----------------BUCADOR DE PALABRA PARA LA ALTA DE USUARIO--------------------------
+bool buscarUsuario(const std::string& palabra) {
+    std::ifstream file("credenciales.txt");
+    if (!file.is_open()) {
+        std::cerr << "Error al abrir el archivo de credenciales." << std::endl;
+        return false; // O manejar el error de alguna otra manera
+    }
+
+    std::string linea;
+    bool encontrada = false;
+    while (std::getline(file, linea)) {
+        std::istringstream iss(linea);
+
+        std::string usuario;
+
+        if (std::getline(iss, usuario, '|')) {
+            // Eliminar espacios en blanco del principio y final de usuario
+            usuario.erase(std::remove_if(usuario.begin(), usuario.end(), ::isspace), usuario.end());
+
+            if (usuario == palabra) {
+                encontrada = true;
+                break; // Puedes salir del bucle tan pronto como encuentres el usuario
+            }
+        }
+    }
+    return encontrada;
+}
 
 
-    //TRADUCCION-----------------------------------------------------------
+
+ //-----------------------------ALTA DE USUARIO----------------------------------
+
+   void AltaDeUsuario() {
+
+        FILE *puntero;
+        puntero = fopen ("credenciales.txt", "a");
+
+
+        const char* mensaje;
+
+
+        string pala;
+
+        //----------------------NOMBRE DE USUARIOOOO-----------------------
+        send(client,"COLOCA EL NOMBRE DEL USUARIO NUEVO:",sizeof(buffer),0);
+ // recibo  REVISAR
+int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
+     buffer[bytesRecibidosD] ='\0';
+       char nombre[sizeof(buffer)];
+
+       strcpy(nombre,buffer);
+    // memset(buffer,0,sizeof(buffer));
+     pala=ConvertirAMinusculas(buffer);//transformo el buffer a string y valido que no este escrito
+      //VERIFICA SI ESTA LA PALABRA YA ESTA ESCRITA EN EL TRADUCTOR
+      printf("BUCAR USUARIO RESULTADO: %d",buscarUsuario(pala));
+      printf("que hay guardado en pala: %s",pala);
+       printf("que hay guardado en buffer: %s",buffer);
+    if (buscarUsuario(buffer)==true) {
+            //creo un string para convertir en char
+       string mensajeAux = "\nError al dar de alta el nuevo usuario: " + pala + " YA EXISTE";
+mensaje = mensajeAux.c_str();
+send(client, mensaje, strlen(mensaje), 0);
+       return;
+    }else{
+ //----------------------------------CONTASEÑA DE USUARIO--------------------------------------------------
+
+ send(client,"\nNOMBRE DE USUARIO GUARDADO!\n COLOCA LA CONTRASENIA DEL USUARIO NUEVO:",sizeof(buffer),0);
+ // recibo  REVISAR
+int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
+     buffer[bytesRecibidosD] ='\0';
+      recv(client, buffer, sizeof(buffer) - 1, 0);
+     printf("CONTRASENIA QUE RECIBO: %s",buffer);
+     //  char contra[sizeof(buffer)];
+    //   strcpy(contra,buffer);
+    // memset(buffer,0,sizeof(buffer));
+
+            //escribe
+            mensaje= "\nMENSAJE AGREGADO CORRECTAMEN AL ARCHIVO DE CREDENCIALES!!\n";
+        send(client, mensaje, strlen(mensaje), 0);
+           // Agrega un carácter de nueva línea al final del arreglo aux
+        fprintf(puntero,"\n");
+        //---------STRING A COLOCAR-------
+        string usuarioTerminado = string(nombre) + "|" + string(buffer) + "|CONSULTA|0";
+memset(buffer,0,sizeof(buffer));
+
+     // Convertir el std::string a un arreglo de caracteres (const char*)
+    const char* auxiliar = usuarioTerminado.c_str();
+
+
+            fprintf(puntero, auxiliar);
+    }
+
+            fclose(puntero);
+    }
+
+    //----------------------------------------------TRADUCCION-----------------------------------------------------------
 void Traductor(const std::string& palabra) {
     std::ifstream file("traductor.txt");
 
@@ -263,9 +359,23 @@ pala=aux;
     }
             fclose(puntero);
 
-    }};
+
+    }
+
+    };
+
+void MenuCliente(){
+printf("\n-----------MENU------------\n");
+printf("\nOPCION 0: TRADUCIR PALABRA\n");
+printf("\nOPCION 1: AGREGAR PALABAR\n");
+printf("\n-----------------------\n");
+printf("\n-----------------------\n");
+printf("\n-----------------------\n");
+printf("\n-----------------------\n");
+printf("\n-----------------------\n");
 
 
+}
 
 
 
@@ -277,19 +387,20 @@ pala=aux;
     int main(){
 
  Servidor *Servidorr =new Servidor();
-Servidorr->InsertarTraduccion();
+//Servidorr->InsertarTraduccion();
 
-     Servidorr->TraductorCliente();
+//printf(" BUSCAR USUARIO LO QUE DEVUELVE: %d",Servidorr->buscarUsuario("persona1"));
+Servidorr->AltaDeUsuario();
+/*
+list<Credencial> credencial = FuncionArchivoEnEstructura();
+Servidorr->Credenciales(Servidorr);
+*/
+ //Servidorr->TraductorCliente();
     // Cargar las credenciales desde el archivo
 
 
     // Imprimir las credenciales cargadas (solo como ejemplo)
-list<Credencial> credencial = FuncionArchivoEnEstructura();
 
-   // Servidorr->Credenciales(Servidorr);
-       // Servidorr->Recibir();
-        //Servidorr->Enviar();
-
-    return 0;
+    //return 0;
     }
 

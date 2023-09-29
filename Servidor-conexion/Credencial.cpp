@@ -82,7 +82,13 @@ ifstream file("credenciales.txt");
         cerr << "Error al abrir el archivo de credenciales." << endl;
         return credenciales;
     }
+
 }*/
+
+
+
+
+
 /*
 int main() {
     list<Credencial> credenciales = FuncionArchivoEnEstructura();

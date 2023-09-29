@@ -32,7 +32,10 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="main.cpp" />
+		<Unit filename="Credencial.cpp" />
+		<Unit filename="Credencial.h" />
+		<Unit filename="Servidor.cpp" />
+		<Unit filename="credenciales.txt" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
