@@ -17,6 +17,9 @@ struct Credencial {
 std::list<Credencial> FuncionArchivoEnEstructura();
 bool buscadorDeUsuario(std::list<Credencial> credencial, std::string usuario);
 bool verificarContrasenia(std::list<Credencial> credencial, std::string usuario, std::string contra);
+int verificarRol(std::string nombre);
+void CambiarNumeroUsuario(const std::string& nombreUsuario, int nuevoNumero);
+int ObtenerNumeroUsuario(const std::string& nombreUsuario);
 
 #endif // CREDENCIAL_H
 

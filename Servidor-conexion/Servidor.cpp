@@ -34,14 +34,16 @@ public:
         cout<< "Cliente conectado!" << endl;
     }
     }
-/*
 
 
-    void Recibir(){
+
+    char* Recibir(){
     recv(client,buffer,sizeof(buffer),0);
+    char buf[sizeof(buffer)];
+    strcpy(buf,buffer);
     cout<< "EL CLIENTE DICE : "<< buffer <<endl;
     memset(buffer,0,sizeof(buffer));
-
+return buf;
     }
     void Enviar(){
     cout<<"Escribe el mensaje a enviar";
@@ -52,18 +54,20 @@ public:
     cout<< "Mensaje enviado!"<<endl;
     }
 
-*/
+
     void CerrarSocket(){
     closesocket(client);
     cout<<"Socket cerrado,cliente desconectado."<<endl;
     }
-
-  void Credenciales(Servidor* servidor) {
+//[----------------------------------CREDENCIALE VALIDACIONES DE USUARIOS------------------------------------------------------]--
+int Credenciales(Servidor* servidor) {
      list<Credencial> credencial=FuncionArchivoEnEstructura();
       bool valor=false;
+      int num;
   bool valor2=false;
-    int intentos=0;
-    while(valor!=true){
+   char usuario[sizeof(buffer)];// variable para guardar el usuario
+   int intentos;
+
             //envio
    send(client,"Nombre Usuario?",sizeof(buffer),0);
     memset(buffer,0,sizeof(buffer));
@@ -72,18 +76,23 @@ public:
      int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
      buffer[bytesRecibidos] = '\0';
      cout << "EL CLIENTE DICE : " << servidor->buffer << endl;
-     char usuario[sizeof(buffer)];// variable para guardar el usuario
-     strcpy(usuario,buffer);//copio el usuario del buffer a la variable y poder buscarla en funciones
- valor=buscadorDeUsuario(credencial,buffer);//busca dentro de la lista string  al usuario devuelve booleano
+     strcpy(usuario,buffer);
+    // variable para guardar el usuario
+     //copio el usuario del buffer a la variable y poder buscarla en funciones
+     intentos=ObtenerNumeroUsuario(servidor->buffer);
+     printf("ESTOS SON LOS INTENTOS: %d",intentos);
+      num=verificarRol(usuario);
+      valor=buscadorDeUsuario(credencial,buffer);//busca dentro de la lista string  al usuario devuelve booleano
 
-   memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
- //--------contraseña--------------------
-    if(valor==true){//verifica y avisa
+    memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
 
-//mensaje
- while(valor2==false){
+ //--------contraseña------------------------------------
+    if(valor==true && intentos<3){//verifica y avisa
+
+//-----------------------------mensaje------------------------------------
+ while(valor2==false||intentos<3){//HASTA QUE NO PONGA BIEN LA CONTRA O BLOQUEE NO sale
     send(client,"Usuario Encontrado!\n Escriba la Contrasenia:",sizeof(buffer),0);
- // recibo  REVISAR
+ //-----Recibo  REVISAR-------------------
 int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
      buffer[bytesRecibidosD] ='\0';
        memset(buffer,0,sizeof(buffer));
@@ -91,20 +100,30 @@ int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
 
       cout << "EL CLIENTE DICE : " << buffer << endl;
       valor2= verificarContrasenia(credencial,usuario,servidor->buffer);
+      if(valor2==false){
+        intentos=ObtenerNumeroUsuario(usuario);
+        intentos=intentos+1;
+        CambiarNumeroUsuario(usuario,intentos);
+      }
+         intentos=ObtenerNumeroUsuario(usuario);
     }
-      printf("QUE BUSCO USUARIO: %s",usuario);
-       printf("QUE BUSCO BUFFER: %s",buffer);
-      printf("VALOR del booleano contra : %d",valor2);
    memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
 
+
  }else{
-        send(client,"Usuario  no Encontrado! :(,vuelve a intentar",sizeof(buffer),0);
+        send(client,"Usuario  no Encontrado! :( o Bloqueado!,habla con algun administrador!",sizeof(buffer),0);
 
  }
 
-}
+
+
+return num;
     }
-//-----------------BUCADOR DE PALABRA PARA LA TRADUCCION--------------------------
+
+
+
+
+//[-----------------BUCADOR DE PALABRA PARA LA TRADUCCION--------------------------]
 bool buscarPalabra(const std::string& palabra){
     //REUTILIZACION DE CODIGO EN FUNCION TRADUCTOR()
  std::ifstream file("traductor.txt");
@@ -132,7 +151,7 @@ bool buscarPalabra(const std::string& palabra){
 }
 
 
-//-----------------BUCADOR DE PALABRA PARA LA ALTA DE USUARIO--------------------------
+//[-----------------BUCADOR DE PALABRA PARA LA ALTA DE USUARIO--------------------------]
 bool buscarUsuario(const std::string& palabra) {
     std::ifstream file("credenciales.txt");
     if (!file.is_open()) {
@@ -162,7 +181,7 @@ bool buscarUsuario(const std::string& palabra) {
 
 
 
- //-----------------------------ALTA DE USUARIO----------------------------------
+ //-[----------------------------ALTA DE USUARIO----------------------------------]
 
    void AltaDeUsuario() {
 
@@ -175,7 +194,7 @@ bool buscarUsuario(const std::string& palabra) {
 
         string pala;
 
-        //----------------------NOMBRE DE USUARIOOOO-----------------------
+        //[----------------------NOMBRE DE USUARIOOOO-----------------------]
         send(client,"COLOCA EL NOMBRE DEL USUARIO NUEVO:",sizeof(buffer),0);
  // recibo  REVISAR
 int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
@@ -186,9 +205,7 @@ int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
     // memset(buffer,0,sizeof(buffer));
      pala=ConvertirAMinusculas(buffer);//transformo el buffer a string y valido que no este escrito
       //VERIFICA SI ESTA LA PALABRA YA ESTA ESCRITA EN EL TRADUCTOR
-      printf("BUCAR USUARIO RESULTADO: %d",buscarUsuario(pala));
-      printf("que hay guardado en pala: %s",pala);
-       printf("que hay guardado en buffer: %s",buffer);
+
     if (buscarUsuario(buffer)==true) {
             //creo un string para convertir en char
        string mensajeAux = "\nError al dar de alta el nuevo usuario: " + pala + " YA EXISTE";
@@ -196,7 +213,7 @@ mensaje = mensajeAux.c_str();
 send(client, mensaje, strlen(mensaje), 0);
        return;
     }else{
- //----------------------------------CONTASEÑA DE USUARIO--------------------------------------------------
+ //[---------------------------------CONTASEÑA DE USUARIO--------------------------------------------------]
 
  send(client,"\nNOMBRE DE USUARIO GUARDADO!\n COLOCA LA CONTRASENIA DEL USUARIO NUEVO:",sizeof(buffer),0);
  // recibo  REVISAR
@@ -227,7 +244,7 @@ memset(buffer,0,sizeof(buffer));
             fclose(puntero);
     }
 
-    //----------------------------------------------TRADUCCION-----------------------------------------------------------
+    //[----------------------------------------------TRADUCCION-----------------------------------------------------------]
 void Traductor(const std::string& palabra) {
     std::ifstream file("traductor.txt");
 
@@ -279,12 +296,9 @@ void TraductorCliente(){
     std::cout << "Palabra a Traducir: " << buffer << std::endl;
     std::cout << "Traduzco entonces..." << std::endl;
 
-//    Traductor(buffer);
+//  ----------  Traductor(buffer);
       Traductor(ConvertirAMinusculas(buffer));//se convierte el texto antes de buscar
 }
-
-
-
 
 
 std::string ConvertirAMinusculas(const std::string& texto) {
@@ -297,7 +311,7 @@ std::string ConvertirAMinusculas(const std::string& texto) {
 
 
 
-  //INSERTAR TRADUCCIONNN
+  //--------------------------INSERTAR TRADUCCIONNN--------------------------------------
 
     void InsertarTraduccion() {
 
@@ -362,39 +376,135 @@ pala=aux;
 
     }
 
-    };
+
+
+void MenuAdmin(){
+    printf( "\nBIENVENIDO ADMINISTRADO,QUE DESEA HACER?!!!\n\n-----------MENU------------\n\nOPCION 0: NUEVA TRADUCCION\n\nOPCION 1: USUARIOS\n OPCION 2:VER REGISTRO DE ACTIVIDADES\n OPCION 3: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:");
+
+}
 
 void MenuCliente(){
-printf("\n-----------MENU------------\n");
-printf("\nOPCION 0: TRADUCIR PALABRA\n");
-printf("\nOPCION 1: AGREGAR PALABAR\n");
-printf("\n-----------------------\n");
-printf("\n-----------------------\n");
-printf("\n-----------------------\n");
-printf("\n-----------------------\n");
-printf("\n-----------------------\n");
+    printf( "\nBIENVENIDO AL TRADUCTOR!!!\n\n-----------MENU------------\n\nOPCION 0: TRADUCTOR\n\nOPCION 1: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:");
+}};
+/*
+void subMenu(){
+    int a=0;
+    do{
+        int op;
+        string salida;
+            cout << "INGRESE UNA OPCION: \n";
+            cout << "1) ALTA \n";
+            cout << "2) DESBLOQUEO \n";
+            cout << "3) SALIR AL MENU ANTERIOR \n";
+            cin >> op;
+            send(server, (char *)&op, sizeof(op), 0);
+
+            switch(op){
+            case 1:
+                cout << "Alta: \n";
+                ingresarUsuario();
+                break;
+            case 2:
+                cout << "Desbloqueo: \n";
+                break;
+            case 3:
+                cout << "escriba /salir para ir al menu anterior: ";
+                cin >> salida;
+
+                if(salida == "/salir"){
+                    menu();
+
+                }
+            }
+
+
+    }while(a!=1);
+}
+
+*/
+/*
+ int  EnviarMensajeYRecibirNumero() {
+ // Enviar un mensaje al cliente pidiendo un número
+    send(client, "Por favor, ingrese un número: ", sizeof(buffer), 0);
+
+    // Recibir el número ingresado por el cliente
+    int numeroIngresado;
+    int bytesRecibidos = recv(client, reinterpret_cast<char*>(&numeroIngresado), sizeof(numeroIngresado), 0);
+
+    if (bytesRecibidos == -1) {
+        cerr << "Error al recibir el número del cliente." << endl;
+
+    }
+
+    // Ahora, 'numeroIngresado' contiene el número ingresado por el cliente
+    cout << "Número ingresado por el cliente: " << numeroIngresado << endl;
+return numeroIngresado;
+ }
+*/
+
+    int main(){
+
+ Servidor *servidorr =new Servidor();
+/*
+ string usuario;
+ int num;
+ num=servidorr->Credenciales(servidorr);
+int opcion;
+//num=1;
+printf("EL boleano que me retorna credenciales : %d",num);
+if(num==1){
+   servidorr->MenuCliente();
+     opcion=servidorr->EnviarMensajeYRecibirNumero();
+ cout << "EL CLIENTE DICE : " << opcion<< endl;
+
+ switch (opcion){
+ case 0: servidorr->Traductor();
+ break;
+ case 1: servidorr->CerrarSocket();
+ break;
+ default:printf("no es una opcion valida");
+ break;
+ }
+
+ if(num==2){
+
+    servidorr->MenuAdmin();
+    //recibo numero
+
+    switch(opcion){
+
+    case 0: servidorr->InsertarTraduccion();
+ break;
+ //case 1: servidorr->Usuario();
+ //break;
+  // case 2: servidorr->RegistrodeAcrividades();
+ //break;
+   case 3: servidorr->CerrarSocket;
+ break;
+ default:printf("no es una opcion valida");
+ break;
+    }
+ }
+
+*/
+
+int num;
+ num=servidorr->Credenciales(servidorr);
+ printf("numerookrpkkgñkg: %d",num);
+
+
+
+
 
 
 }
 
-
-
-
-
-
-
-
-    int main(){
-
- Servidor *Servidorr =new Servidor();
 //Servidorr->InsertarTraduccion();
 
-//printf(" BUSCAR USUARIO LO QUE DEVUELVE: %d",Servidorr->buscarUsuario("persona1"));
-Servidorr->AltaDeUsuario();
 /*
 list<Credencial> credencial = FuncionArchivoEnEstructura();
 Servidorr->Credenciales(Servidorr);
-*/
+
  //Servidorr->TraductorCliente();
     // Cargar las credenciales desde el archivo
 
@@ -402,5 +512,5 @@ Servidorr->Credenciales(Servidorr);
     // Imprimir las credenciales cargadas (solo como ejemplo)
 
     //return 0;
-    }
+    }*/
 

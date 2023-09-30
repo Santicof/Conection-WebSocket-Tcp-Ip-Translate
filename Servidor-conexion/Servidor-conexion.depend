@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1696019254 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
+1696112058 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
 	<iostream>
 	<winsock2.h>
 	<vector>
@@ -12,13 +12,14 @@
 1584205420 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\main.cpp
 	<iostream>
 
-1696014677 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
+1696111631 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
 	<iostream>
 	<vector>
 	<fstream>
 	<sstream>
 	<list>
 	<string>
+	<cstring>
 
 1695591298 c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
 	<iostream>
@@ -36,7 +37,7 @@
 	<sstream>
 	"Credencial.cpp"
 
-1695692273 c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.h
+1696111472 c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.h
 	<string>
 	<list>
 	<iostream>
