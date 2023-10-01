@@ -24,7 +24,7 @@ public:
     server=socket(AF_INET,SOCK_STREAM,0);
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     serverAddr.sin_family=AF_INET;
-    serverAddr.sin_port=htons(5555);
+    serverAddr.sin_port=htons(5005);
 
     bind(server,(SOCKADDR *)&serverAddr, sizeof(serverAddr));
     listen(server,0);
@@ -37,13 +37,13 @@ public:
 
 
 
-    char* Recibir(){
+    void Recibir(){
     recv(client,buffer,sizeof(buffer),0);
     char buf[sizeof(buffer)];
     strcpy(buf,buffer);
     cout<< "EL CLIENTE DICE : "<< buffer <<endl;
     memset(buffer,0,sizeof(buffer));
-return buf;
+
     }
     void Enviar(){
     cout<<"Escribe el mensaje a enviar";
@@ -57,69 +57,74 @@ return buf;
 
     void CerrarSocket(){
     closesocket(client);
+     send(client,"Socket cerrado,cliente desconectado.",sizeof(buffer),0);
+   memset(buffer,0,sizeof(buffer));
     cout<<"Socket cerrado,cliente desconectado."<<endl;
     }
 //[----------------------------------CREDENCIALE VALIDACIONES DE USUARIOS------------------------------------------------------]--
 int Credenciales(Servidor* servidor) {
-     list<Credencial> credencial=FuncionArchivoEnEstructura();
-      bool valor=false;
-      int num;
-  bool valor2=false;
-   char usuario[sizeof(buffer)];// variable para guardar el usuario
-   int intentos;
+    list<Credencial> credencial = FuncionArchivoEnEstructura();
+    bool valor = false;
+    int num;
+    char usuario[sizeof(buffer)]; // variable para guardar el usuario
+    int intentos = 0; // Inicializamos el contador de intentos
 
-            //envio
-   send(client,"Nombre Usuario?",sizeof(buffer),0);
-    memset(buffer,0,sizeof(buffer));
- cout << "Mensaje enviado!" << endl;
-    // -----------recibo-----------
-     int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
-     buffer[bytesRecibidos] = '\0';
-     cout << "EL CLIENTE DICE : " << servidor->buffer << endl;
-     strcpy(usuario,buffer);
-    // variable para guardar el usuario
-     //copio el usuario del buffer a la variable y poder buscarla en funciones
-     intentos=ObtenerNumeroUsuario(servidor->buffer);
-     printf("ESTOS SON LOS INTENTOS: %d",intentos);
-      num=verificarRol(usuario);
-      valor=buscadorDeUsuario(credencial,buffer);//busca dentro de la lista string  al usuario devuelve booleano
 
-    memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
+        // Envío
+        send(client, "Nombre Usuario?", sizeof(buffer), 0);
+        memset(buffer, 0, sizeof(buffer));
+        cout << "Mensaje enviado!" << endl;
 
- //--------contraseña------------------------------------
-    if(valor==true && intentos<3){//verifica y avisa
+        // Recibo
+        int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
+        buffer[bytesRecibidos] = '\0';
+        cout << "EL CLIENTE DICE : " << servidor->buffer << endl;
+        strcpy(usuario, buffer);
 
-//-----------------------------mensaje------------------------------------
- while(valor2==false||intentos<3){//HASTA QUE NO PONGA BIEN LA CONTRA O BLOQUEE NO sale
-    send(client,"Usuario Encontrado!\n Escriba la Contrasenia:",sizeof(buffer),0);
- //-----Recibo  REVISAR-------------------
+        intentos = ObtenerNumeroUsuario(servidor->buffer);
+        cout << "ESTOS SON LOS INTENTOS: " << intentos << endl;
+
+        num = verificarRol(usuario);
+        valor = buscadorDeUsuario(credencial, buffer); // Busca dentro de la lista el usuario y devuelve un booleano
+
+        memset(servidor->buffer, 0, sizeof(servidor->buffer)); // Borra el buffer
+
+        // Verificamos si el usuario existe y no está bloqueado
+        if (valor == true && intentos < 3) {
+            bool valor2 = false;
+
+            // Bucle para solicitar la contraseña hasta que sea correcta o se alcancen los intentos máximos
+            while (intentos < 3 && !valor2) {
+                // Envío
+                send(client, "Usuario Encontrado!\nEscriba la Contraseña:", sizeof(buffer), 0);
+
+                //-----Recibo  REVISAR-------------------
 int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
      buffer[bytesRecibidosD] ='\0';
        memset(buffer,0,sizeof(buffer));
      recv(client, buffer, sizeof(buffer) - 1, 0);
+                cout << "EL CLIENTE DICE: " << buffer << endl;
 
-      cout << "EL CLIENTE DICE : " << buffer << endl;
-      valor2= verificarContrasenia(credencial,usuario,servidor->buffer);
-      if(valor2==false){
-        intentos=ObtenerNumeroUsuario(usuario);
-        intentos=intentos+1;
-        CambiarNumeroUsuario(usuario,intentos);
-      }
-         intentos=ObtenerNumeroUsuario(usuario);
-    }
-   memset(servidor->buffer, 0, sizeof(servidor->buffer)); // borra el buffer
+                valor2 = verificarContrasenia(credencial, usuario, buffer);
+
+                if (!valor2) {
+                    intentos++;
+                    CambiarNumeroUsuario(usuario, intentos);
+                }
+            }
+
+            if (valor2) {
+                return num; // Contraseña correcta, retornamos el número
+            }
+        } else {
+            send(client, "Usuario no Encontrado o Bloqueado! Habla con algún administrador.", sizeof(buffer), 0);
+            CerrarSocket();
+            return -1; // Usuario no encontrado o bloqueado, retornamos un valor especial (por ejemplo, -1)
+        }
 
 
- }else{
-        send(client,"Usuario  no Encontrado! :( o Bloqueado!,habla con algun administrador!",sizeof(buffer),0);
-
- }
-
-
-
-return num;
-    }
-
+    return -1; // Si se exceden los intentos, retornamos un valor especial
+}
 
 
 
@@ -285,6 +290,8 @@ void TraductorCliente(){
     // --------- Recepción -----------
    // char buffer[1024];
     int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
+     memset(buffer,0,sizeof(buffer));
+     recv(client, buffer, sizeof(buffer) - 1, 0);
 
     if (bytesRecibidos == -1) {
         std::cerr << "Error al recibir el mensaje del cliente." << std::endl;
@@ -325,6 +332,8 @@ std::string ConvertirAMinusculas(const std::string& texto) {
         const char* mensaje = "Escribe la nueva traduccion, separado las palabras con un ( : )\n";
     send(client, mensaje, strlen(mensaje), 0);
         int bytesRecibidos = recv(client, aux, sizeof(aux), 0);
+         memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
 pala=aux;
 
         // Verificar que las palabras no estén vacías
@@ -375,17 +384,153 @@ pala=aux;
 
 
     }
+   void ListadoBloqueados(){
+       const char* aux;
+       bool p=false;
+   list<Credencial> credenciales = FuncionArchivoEnEstructura();
+   send(client,"\nLISTADO DE USUARIOS BLOQUEADOS\n" , sizeof(aux), 0);
+   for(Credencial crede: credenciales){
+    if(crede.bloqueos==3){
+            aux=crede.usuario.c_str();
+       send(client,aux , sizeof(aux), 0);
+       p=true;
+    }
+   }
+   if(p==false){
+     send(client,"\nNO HAY USUARIOS BLOQUEADOS :(\n" , sizeof(aux), 0);
+   }
+   }
+//-----------------DESBLOQUEO DE USUARIOS-------------------------------------
+void DesbloqueoUsuarios(){
+     ListadoBloqueados();
+     char aux[40];
+ const char* mensaje = "ESCRIBA EL NOMBRE DEL USUARIO A DESBLOQUEAR";
+  send(client, mensaje, strlen(mensaje), 0);
 
-
-
-void MenuAdmin(){
-    printf( "\nBIENVENIDO ADMINISTRADO,QUE DESEA HACER?!!!\n\n-----------MENU------------\n\nOPCION 0: NUEVA TRADUCCION\n\nOPCION 1: USUARIOS\n OPCION 2:VER REGISTRO DE ACTIVIDADES\n OPCION 3: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:");
+    int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
+    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+       memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
+     CambiarNumeroUsuario(aux,0);
+     mensaje="USUARIO DESBLOQUEADO CON EXITO";
+     send(client, mensaje, strlen(mensaje), 0);
 
 }
 
-void MenuCliente(){
-    printf( "\nBIENVENIDO AL TRADUCTOR!!!\n\n-----------MENU------------\n\nOPCION 0: TRADUCTOR\n\nOPCION 1: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:");
-}};
+void MenuAdmin(){
+    char aux[10];
+ const char* mensaje = "\nBIENVENIDO ADMINISTRADO,QUE DESEA HACER?!!!\n\n-----------MENU------------\n\nOPCION 0: NUEVA TRADUCCION\n\nOPCION 1: ENTRAR AL MENU USUARIOS\n OPCION 2:VER REGISTRO DE ACTIVIDADES\n OPCION 3: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:";
+     send(client, mensaje, strlen(mensaje), 0);
+    int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
+    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+       memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
+                cout << "EL CLIENTE DICE OPCION: " << aux << endl;
+    int opcion;
+
+    try {
+        opcion = std::stoi(aux);
+    } catch (const std::invalid_argument& e) {
+        // Maneja el error aquí si la conversión falla
+        opcion = -1; // Otra forma de indicar un error
+    }
+
+  switch(opcion){
+            case 0:
+               // cout << "NUEVA TRADUCCION: \n";
+               InsertarTraduccion();
+                break;
+            case 1:
+               // cout << "MENU USUARIOS \n";
+              MenuUsuarios();
+                break;
+            case 2://REGISTRO ACTIVIDADES
+                break;
+            case 3://CERRAR SESION
+                CerrarSocket();
+                break;
+
+}
+}
+
+
+void MenuUsuarios(){
+     char aux[10];
+ const char* mensaje = "\nMENU USUARIOS!!!\n\n-----------MENU------------\n\nOPCION 0: DAR DE ALTA USUARIOS\n\nOPCION 1: DESBLOQUEAR USUARIOS\nCOLOQUE UNA OPCION ACONTINUACION:";
+    send(client, mensaje, strlen(mensaje), 0);
+    int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
+    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+       memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
+                cout << "EL CLIENTE DICE: " << buffer << endl;
+    int opcion;
+
+    try {
+        opcion = std::stoi(aux);
+    } catch (const std::invalid_argument& e) {
+        // Maneja el error aquí si la conversión falla
+        opcion = -1; // Otra forma de indicar un error
+    }
+
+  switch(opcion){
+            case 0:
+               // cout << "Alta: \n";
+                AltaDeUsuario();
+                break;
+            case 1:
+               // cout << "Desbloqueo: \n";
+                DesbloqueoUsuarios();
+
+                break;
+            case 2:
+                //cout << "escriba /salir para ir al menu anterior: ";
+                send(client, "escriba /salir para ir al menu anterior: ", strlen(mensaje), 0);
+              int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
+    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+       memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
+
+                if(aux == "/salir"){
+                    MenuAdmin();
+
+                }
+                break;
+
+            }
+}
+void MenuCliente(Servidor* servidorr) {
+    char aux[10];
+    const char* mensaje = "\nBIENVENIDO AL TRADUCTOR!!!\n\n-----------MENU------------\n\nOPCION 0: TRADUCTOR\n\nOPCION 1: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:";
+    send(client, mensaje, strlen(mensaje), 0);
+    int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
+    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+       memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
+                cout << "EL CLIENTE DICE: " << buffer << endl;
+    int opcion;
+
+    try {
+        opcion = std::stoi(aux);
+    } catch (const std::invalid_argument& e) {
+        // Maneja el error aquí si la conversión falla
+        opcion = -1; // Otra forma de indicar un error
+    }
+
+    switch (opcion) {
+        case 0:
+            servidorr->TraductorCliente();
+            break;
+        case 1:
+            servidorr->CerrarSocket();
+            break;
+        default:
+                 send(client," No es una opción válida.\n", strlen(mensaje), 0);
+            //printf("No es una opción válida.\n");
+            break;
+    }
+}
+
+};
 /*
 void subMenu(){
     int a=0;
@@ -445,27 +590,27 @@ return numeroIngresado;
     int main(){
 
  Servidor *servidorr =new Servidor();
-/*
+
  string usuario;
  int num;
  num=servidorr->Credenciales(servidorr);
 int opcion;
 //num=1;
 printf("EL boleano que me retorna credenciales : %d",num);
+
 if(num==1){
-   servidorr->MenuCliente();
-     opcion=servidorr->EnviarMensajeYRecibirNumero();
- cout << "EL CLIENTE DICE : " << opcion<< endl;
+   servidorr->MenuCliente(servidorr);
 
- switch (opcion){
- case 0: servidorr->Traductor();
- break;
- case 1: servidorr->CerrarSocket();
- break;
- default:printf("no es una opcion valida");
- break;
- }
+}
+if(num==2){
+    servidorr->MenuAdmin();
+}
+return 0;
+}
 
+//Servidorr->InsertarTraduccion();
+
+/*
  if(num==2){
 
     servidorr->MenuAdmin();
@@ -475,8 +620,8 @@ if(num==1){
 
     case 0: servidorr->InsertarTraduccion();
  break;
- //case 1: servidorr->Usuario();
- //break;
+ case 1: servidorr->subMenu();
+ break;
   // case 2: servidorr->RegistrodeAcrividades();
  //break;
    case 3: servidorr->CerrarSocket;
@@ -485,23 +630,6 @@ if(num==1){
  break;
     }
  }
-
-*/
-
-int num;
- num=servidorr->Credenciales(servidorr);
- printf("numerookrpkkgñkg: %d",num);
-
-
-
-
-
-
-}
-
-//Servidorr->InsertarTraduccion();
-
-/*
 list<Credencial> credencial = FuncionArchivoEnEstructura();
 Servidorr->Credenciales(Servidorr);
 
