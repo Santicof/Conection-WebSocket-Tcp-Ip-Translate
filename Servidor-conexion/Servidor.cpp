@@ -1,11 +1,12 @@
 #include <iostream>
 #include <winsock2.h>
 #include <vector>
-#include <fstream>   // Agrega esta línea
+#include <fstream>   // Agrega esta lï¿½nea
 #include <sstream>
 #include <list>
 #include "Credencial.h"
 #include <algorithm> // Necesario para std::transform
+#include <thread>
 //BUENA PRACTICA FUNCIONES EN MINUSCULA
 
 using namespace std;
@@ -16,7 +17,7 @@ public:
     SOCKET server,client;
     SOCKADDR_IN serverAddr,clientAddr;
     char buffer[1024];
-    char buffer2[1024];
+
     //string buffer;
     Servidor(){
 
@@ -33,6 +34,21 @@ public:
     if((client=accept(server,(SOCKADDR *)&clientAddr,&clientAddrSize)) != INVALID_SOCKET){
         cout<< "Cliente conectado!" << endl;
     }
+    }
+
+
+
+
+
+   void AceptarConexiones() {
+        while (true) {
+            int clientAddrSize = sizeof(clientAddr);
+            if ((client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize)) != INVALID_SOCKET) {
+                cout << "Cliente conectado!" << endl;
+               // thread t(&Servidor::ManejarCliente, this);
+               // t.detach(); // Ejecutar el hilo de manera independiente
+            }
+        }
     }
 
 
@@ -70,7 +86,7 @@ int Credenciales(Servidor* servidor) {
     int intentos = 0; // Inicializamos el contador de intentos
 
 
-        // Envío
+        // Envï¿½o
         send(client, "Nombre Usuario?", sizeof(buffer), 0);
         memset(buffer, 0, sizeof(buffer));
         cout << "Mensaje enviado!" << endl;
@@ -89,14 +105,14 @@ int Credenciales(Servidor* servidor) {
 
         memset(servidor->buffer, 0, sizeof(servidor->buffer)); // Borra el buffer
 
-        // Verificamos si el usuario existe y no está bloqueado
+        // Verificamos si el usuario existe y no estï¿½ bloqueado
         if (valor == true && intentos < 3) {
             bool valor2 = false;
 
-            // Bucle para solicitar la contraseña hasta que sea correcta o se alcancen los intentos máximos
+            // Bucle para solicitar la contraseï¿½a hasta que sea correcta o se alcancen los intentos mï¿½ximos
             while (intentos < 3 && !valor2) {
-                // Envío
-                send(client, "Usuario Encontrado!\nEscriba la Contraseña:", sizeof(buffer), 0);
+                // Envï¿½o
+                send(client, "Usuario Encontrado!\nEscriba la Contrasenia:", sizeof(buffer), 0);
 
                 //-----Recibo  REVISAR-------------------
 int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
@@ -114,10 +130,10 @@ int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
             }
 
             if (valor2) {
-                return num; // Contraseña correcta, retornamos el número
+                return num; // Contraseï¿½a correcta, retornamos el nï¿½mero
             }
         } else {
-            send(client, "Usuario no Encontrado o Bloqueado! Habla con algún administrador.", sizeof(buffer), 0);
+            send(client, "Usuario no Encontrado o Bloqueado! Habla con algun administrador.", sizeof(buffer), 0);
             CerrarSocket();
             return -1; // Usuario no encontrado o bloqueado, retornamos un valor especial (por ejemplo, -1)
         }
@@ -204,21 +220,23 @@ bool buscarUsuario(const std::string& palabra) {
  // recibo  REVISAR
 int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
      buffer[bytesRecibidosD] ='\0';
-       char nombre[sizeof(buffer)];
+   recv(client, buffer, sizeof(buffer) - 1, 0);
 
+       char nombre[sizeof(buffer)];
+printf("NOMBRE USUARIO ALTA RECIBIDO: %s",buffer);
        strcpy(nombre,buffer);
     // memset(buffer,0,sizeof(buffer));
      pala=ConvertirAMinusculas(buffer);//transformo el buffer a string y valido que no este escrito
       //VERIFICA SI ESTA LA PALABRA YA ESTA ESCRITA EN EL TRADUCTOR
 
-    if (buscarUsuario(buffer)==true) {
+    if (buscarUsuario(pala)==true) {
             //creo un string para convertir en char
        string mensajeAux = "\nError al dar de alta el nuevo usuario: " + pala + " YA EXISTE";
 mensaje = mensajeAux.c_str();
 send(client, mensaje, strlen(mensaje), 0);
        return;
     }else{
- //[---------------------------------CONTASEÑA DE USUARIO--------------------------------------------------]
+ //[---------------------------------CONTASEï¿½A DE USUARIO--------------------------------------------------]
 
  send(client,"\nNOMBRE DE USUARIO GUARDADO!\n COLOCA LA CONTRASENIA DEL USUARIO NUEVO:",sizeof(buffer),0);
  // recibo  REVISAR
@@ -233,7 +251,7 @@ int bytesRecibidosD = recv(client, buffer, sizeof(buffer) - 1, 0);
             //escribe
             mensaje= "\nMENSAJE AGREGADO CORRECTAMEN AL ARCHIVO DE CREDENCIALES!!\n";
         send(client, mensaje, strlen(mensaje), 0);
-           // Agrega un carácter de nueva línea al final del arreglo aux
+           // Agrega un carï¿½cter de nueva lï¿½nea al final del arreglo aux
         fprintf(puntero,"\n");
         //---------STRING A COLOCAR-------
         string usuarioTerminado = string(nombre) + "|" + string(buffer) + "|CONSULTA|0";
@@ -275,7 +293,7 @@ void Traductor(const std::string& palabra) {
     }
 
     if (!encontrada) {
-        std::cout << "No fue posible encontrar la traducción para: " << palabra << std::endl;
+        std::cout << "No fue posible encontrar la traduccion para: " << palabra << std::endl;
     }
 
 }
@@ -283,11 +301,11 @@ void Traductor(const std::string& palabra) {
 
 void TraductorCliente(){
 
- // ---- Interacción ----
+ // ---- Interacciï¿½n ----
     const char* mensaje = "Escribe el mensaje a enviar a traducir\n";
     send(client, mensaje, strlen(mensaje), 0);
 
-    // --------- Recepción -----------
+    // --------- Recepciï¿½n -----------
    // char buffer[1024];
     int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
      memset(buffer,0,sizeof(buffer));
@@ -298,7 +316,7 @@ void TraductorCliente(){
         return;
     }
 
-    buffer[bytesRecibidos] = '\0'; // Añade el carácter nulo al final del mensaje recibido
+    buffer[bytesRecibidos] = '\0'; // Aï¿½ade el carï¿½cter nulo al final del mensaje recibido
 
     std::cout << "Palabra a Traducir: " << buffer << std::endl;
     std::cout << "Traduzco entonces..." << std::endl;
@@ -320,23 +338,25 @@ std::string ConvertirAMinusculas(const std::string& texto) {
 
   //--------------------------INSERTAR TRADUCCIONNN--------------------------------------
 
-    void InsertarTraduccion() {
+   void InsertarTraduccion() {
+    FILE* puntero;
+    puntero = fopen("traductor.txt", "a");
 
-        FILE *puntero;
-        puntero = fopen ("traductor.txt", "a");
 
-        string palabraTraduccion;
+   const char* mensaje = "Escribe la nueva traduccion, separado las palabras con un ( : )\n";
+   send(client, mensaje, strlen(mensaje),0);
+  //printf("PALABRA QUE RECIBO::::::::%s",aux2);
+    int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
 
-        char aux[50];
-        string pala;
-        const char* mensaje = "Escribe la nueva traduccion, separado las palabras con un ( : )\n";
-    send(client, mensaje, strlen(mensaje), 0);
-        int bytesRecibidos = recv(client, aux, sizeof(aux), 0);
-         memset(aux,0,sizeof(aux));
-     recv(client, aux, sizeof(aux) - 1, 0);
-pala=aux;
+    buffer[bytesRecibidos] = '\0';
+   printf("PALABRA QUE RECIBO::::::::%s",buffer);
+     recv(client, buffer, sizeof(buffer) - 1, 0);
 
-        // Verificar que las palabras no estén vacías
+
+    string pala = buffer;
+
+
+       // Verificar que las palabras no estÃ©n vacÃ­as
     if (pala.empty() ) {
        mensaje= "\nError: Las palabras deben tener contenido.";
         send(client, mensaje, strlen(mensaje), 0);
@@ -345,7 +365,7 @@ pala=aux;
     //VERIFICA SI ESTA LA PALABRA YA ESTA ESCRITA EN EL TRADUCTOR
     if (buscarPalabra(pala)==true) {
             //creo un string para convertir en char
-       string mensajeAux="\nYa existe una traducción para LA PALABRA:"+ pala;
+       string mensajeAux="\nYa existe una traducciÃ³n para LA PALABRA:"+ pala;
     mensaje=mensajeAux.c_str();
         send(client, mensaje, strlen(mensaje), 0);
         return;
@@ -362,18 +382,18 @@ pala=aux;
         if (bytesRecibidos <= 0) {
             std::cout << "ERROR" << std::endl; //me da este error revisar!
             } else {
-            aux[bytesRecibidos] = '\0'; // Añadir terminador nulo para convertirlo en una cadena de C válida
+            buffer[bytesRecibidos] = '\0'; // AÃ±adir terminador nulo para convertirlo en una cadena de C vÃ¡lida
             // Ahora 'aux' contiene los datos recibidos desde el socket
             }
 
-            std::cout << aux << std::endl;
+            std::cout << buffer << std::endl;
 
             //escribe
             mensaje= "\nMENSAJE AGREGADO CORRECTAMEN AL ARCHIVO DE TRADUCCIONES!!\n";
         send(client, mensaje, strlen(mensaje), 0);
-           // Agrega un carácter de nueva línea al final del arreglo aux
+           // Agrega un carÃ¡cter de nueva lÃ­nea al final del arreglo aux
         fprintf(puntero,"\n");
-       string auxi=ConvertirAMinusculas(aux);
+       string auxi=ConvertirAMinusculas(buffer);
      // Convertir el std::string a un arreglo de caracteres (const char*)
     const char* auxiChar = auxi.c_str();
 
@@ -384,45 +404,100 @@ pala=aux;
 
 
     }
+
+
+
+
+
    void ListadoBloqueados(){
-       const char* aux;
+const char* aux;
        bool p=false;
+
    list<Credencial> credenciales = FuncionArchivoEnEstructura();
-   send(client,"\nLISTADO DE USUARIOS BLOQUEADOS\n" , sizeof(aux), 0);
+
    for(Credencial crede: credenciales){
     if(crede.bloqueos==3){
             aux=crede.usuario.c_str();
-       send(client,aux , sizeof(aux), 0);
+            printf("listado: %s",aux);
+       send(client,aux, sizeof(buffer), 0);
        p=true;
     }
    }
    if(p==false){
-     send(client,"\nNO HAY USUARIOS BLOQUEADOS :(\n" , sizeof(aux), 0);
+     send(client,"\nNO HAY USUARIOS BLOQUEADOS :(\n" , sizeof(buffer), 0);
    }
    }
 //-----------------DESBLOQUEO DE USUARIOS-------------------------------------
 void DesbloqueoUsuarios(){
      ListadoBloqueados();
-     char aux[40];
+     //char aux[40];
  const char* mensaje = "ESCRIBA EL NOMBRE DEL USUARIO A DESBLOQUEAR";
   send(client, mensaje, strlen(mensaje), 0);
 
-    int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
-    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
-       memset(aux,0,sizeof(aux));
-     recv(client, aux, sizeof(aux) - 1, 0);
-     CambiarNumeroUsuario(aux,0);
+    int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
+    buffer[bytesRecibidos] = '\0'; // Aï¿½ade el carï¿½cter nulo al final de la cadena recibida
+      // memset(aux,0,sizeof(aux));
+     recv(client, buffer, sizeof(buffer) - 1, 0);
+     printf("usuario a desbloquear: %s",buffer);
+     CambiarNumeroUsuario(buffer,0);
      mensaje="USUARIO DESBLOQUEADO CON EXITO";
      send(client, mensaje, strlen(mensaje), 0);
-
+CerrarSocket();
 }
 
-void MenuAdmin(){
+
+
+void MenuUsuarios(Servidor* servidorr){
+     char aux[10];
+ const char* mensaje = "\nMENU USUARIOS!!!\n\n-----------MENU------------\n\nOPCION 0: DAR DE ALTA USUARIOS\n\nOPCION 1: DESBLOQUEAR USUARIOS,\nLISTADO:\nOPCION 2:SALIR\nCOLOQUE UNA OPCION ACONTINUACION:";
+    send(client, mensaje, strlen(mensaje), 0);
+    int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
+    buffer[bytesRecibidos] = '\0';
+      // memset(aux,0,sizeof(aux));
+     recv(client, aux, sizeof(aux) - 1, 0);
+                cout << "EL CLIENTE DICE: " << buffer << endl;
+    int opcion;
+
+    try {
+        opcion = std::stoi(aux);
+    } catch (const std::invalid_argument& e) {
+        // Maneja el error aquï¿½ si la conversiï¿½n falla
+        opcion = -1; // Otra forma de indicar un error
+    }
+
+  switch(opcion){
+            case 0:
+               // cout << "Alta: \n";
+               servidorr->AltaDeUsuario();
+                break;
+            case 1:
+               // cout << "Desbloqueo: \n";
+                servidorr->DesbloqueoUsuarios();
+
+                break;
+            case 2:
+                //cout << "escriba /salir para ir al menu anterior: ";
+                send(client, "escriba /salir para ir al menu anterior: ", strlen(mensaje), 0);
+              int bytesRecibidos = recv(client, buffer, sizeof(buffer) - 1, 0);
+    buffer[bytesRecibidos] = '\0'; // Aï¿½ade el carï¿½cter nulo al final de la cadena recibida
+       //memset(aux,0,sizeof(aux));
+     recv(client, buffer, sizeof(buffer) - 1, 0);
+printf("BUFER:%s",buffer);
+                if(strcmp(buffer, "salir") == 0){
+                    servidorr->MenuAdmin(servidorr);
+
+                }
+                break;
+
+            }
+}
+
+void MenuAdmin(Servidor*servidorr){
     char aux[10];
  const char* mensaje = "\nBIENVENIDO ADMINISTRADO,QUE DESEA HACER?!!!\n\n-----------MENU------------\n\nOPCION 0: NUEVA TRADUCCION\n\nOPCION 1: ENTRAR AL MENU USUARIOS\n OPCION 2:VER REGISTRO DE ACTIVIDADES\n OPCION 3: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:";
      send(client, mensaje, strlen(mensaje), 0);
     int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
-    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+    aux[bytesRecibidos] = '\0'; // Aï¿½ade el carï¿½cter nulo al final de la cadena recibida
        memset(aux,0,sizeof(aux));
      recv(client, aux, sizeof(aux) - 1, 0);
                 cout << "EL CLIENTE DICE OPCION: " << aux << endl;
@@ -431,18 +506,18 @@ void MenuAdmin(){
     try {
         opcion = std::stoi(aux);
     } catch (const std::invalid_argument& e) {
-        // Maneja el error aquí si la conversión falla
+        // Maneja el error aquï¿½ si la conversiï¿½n falla
         opcion = -1; // Otra forma de indicar un error
     }
 
   switch(opcion){
             case 0:
                // cout << "NUEVA TRADUCCION: \n";
-               InsertarTraduccion();
+              servidorr->InsertarTraduccion();
                 break;
             case 1:
                // cout << "MENU USUARIOS \n";
-              MenuUsuarios();
+              servidorr->MenuUsuarios(servidorr);
                 break;
             case 2://REGISTRO ACTIVIDADES
                 break;
@@ -452,58 +527,12 @@ void MenuAdmin(){
 
 }
 }
-
-
-void MenuUsuarios(){
-     char aux[10];
- const char* mensaje = "\nMENU USUARIOS!!!\n\n-----------MENU------------\n\nOPCION 0: DAR DE ALTA USUARIOS\n\nOPCION 1: DESBLOQUEAR USUARIOS\nCOLOQUE UNA OPCION ACONTINUACION:";
-    send(client, mensaje, strlen(mensaje), 0);
-    int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
-    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
-       memset(aux,0,sizeof(aux));
-     recv(client, aux, sizeof(aux) - 1, 0);
-                cout << "EL CLIENTE DICE: " << buffer << endl;
-    int opcion;
-
-    try {
-        opcion = std::stoi(aux);
-    } catch (const std::invalid_argument& e) {
-        // Maneja el error aquí si la conversión falla
-        opcion = -1; // Otra forma de indicar un error
-    }
-
-  switch(opcion){
-            case 0:
-               // cout << "Alta: \n";
-                AltaDeUsuario();
-                break;
-            case 1:
-               // cout << "Desbloqueo: \n";
-                DesbloqueoUsuarios();
-
-                break;
-            case 2:
-                //cout << "escriba /salir para ir al menu anterior: ";
-                send(client, "escriba /salir para ir al menu anterior: ", strlen(mensaje), 0);
-              int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
-    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
-       memset(aux,0,sizeof(aux));
-     recv(client, aux, sizeof(aux) - 1, 0);
-
-                if(aux == "/salir"){
-                    MenuAdmin();
-
-                }
-                break;
-
-            }
-}
 void MenuCliente(Servidor* servidorr) {
     char aux[10];
     const char* mensaje = "\nBIENVENIDO AL TRADUCTOR!!!\n\n-----------MENU------------\n\nOPCION 0: TRADUCTOR\n\nOPCION 1: CERRAR SESION\nCOLOQUE UNA OPCION ACONTINUACION:";
     send(client, mensaje, strlen(mensaje), 0);
     int bytesRecibidos = recv(client, aux, sizeof(aux) - 1, 0);
-    aux[bytesRecibidos] = '\0'; // Añade el carácter nulo al final de la cadena recibida
+    aux[bytesRecibidos] = '\0'; // Aï¿½ade el carï¿½cter nulo al final de la cadena recibida
        memset(aux,0,sizeof(aux));
      recv(client, aux, sizeof(aux) - 1, 0);
                 cout << "EL CLIENTE DICE: " << buffer << endl;
@@ -512,7 +541,7 @@ void MenuCliente(Servidor* servidorr) {
     try {
         opcion = std::stoi(aux);
     } catch (const std::invalid_argument& e) {
-        // Maneja el error aquí si la conversión falla
+        // Maneja el error aquï¿½ si la conversiï¿½n falla
         opcion = -1; // Otra forma de indicar un error
     }
 
@@ -524,73 +553,20 @@ void MenuCliente(Servidor* servidorr) {
             servidorr->CerrarSocket();
             break;
         default:
-                 send(client," No es una opción válida.\n", strlen(mensaje), 0);
-            //printf("No es una opción válida.\n");
+                 send(client," No es una opcion valida.\n", strlen(mensaje), 0);
+            //printf("No es una opciï¿½n vï¿½lida.\n");
             break;
     }
 }
 
 };
-/*
-void subMenu(){
-    int a=0;
-    do{
-        int op;
-        string salida;
-            cout << "INGRESE UNA OPCION: \n";
-            cout << "1) ALTA \n";
-            cout << "2) DESBLOQUEO \n";
-            cout << "3) SALIR AL MENU ANTERIOR \n";
-            cin >> op;
-            send(server, (char *)&op, sizeof(op), 0);
 
-            switch(op){
-            case 1:
-                cout << "Alta: \n";
-                ingresarUsuario();
-                break;
-            case 2:
-                cout << "Desbloqueo: \n";
-                break;
-            case 3:
-                cout << "escriba /salir para ir al menu anterior: ";
-                cin >> salida;
-
-                if(salida == "/salir"){
-                    menu();
-
-                }
-            }
-
-
-    }while(a!=1);
-}
-
-*/
-/*
- int  EnviarMensajeYRecibirNumero() {
- // Enviar un mensaje al cliente pidiendo un número
-    send(client, "Por favor, ingrese un número: ", sizeof(buffer), 0);
-
-    // Recibir el número ingresado por el cliente
-    int numeroIngresado;
-    int bytesRecibidos = recv(client, reinterpret_cast<char*>(&numeroIngresado), sizeof(numeroIngresado), 0);
-
-    if (bytesRecibidos == -1) {
-        cerr << "Error al recibir el número del cliente." << endl;
-
-    }
-
-    // Ahora, 'numeroIngresado' contiene el número ingresado por el cliente
-    cout << "Número ingresado por el cliente: " << numeroIngresado << endl;
-return numeroIngresado;
- }
-*/
 
     int main(){
 
  Servidor *servidorr =new Servidor();
-
+  // Inicia un hilo para aceptar conexiones entrantes
+    thread acceptThread(&Servidor::AceptarConexiones, servidorr);
  string usuario;
  int num;
  num=servidorr->Credenciales(servidorr);
@@ -603,42 +579,8 @@ if(num==1){
 
 }
 if(num==2){
-    servidorr->MenuAdmin();
+    servidorr->MenuAdmin(servidorr);
 }
+acceptThread.join();
 return 0;
 }
-
-//Servidorr->InsertarTraduccion();
-
-/*
- if(num==2){
-
-    servidorr->MenuAdmin();
-    //recibo numero
-
-    switch(opcion){
-
-    case 0: servidorr->InsertarTraduccion();
- break;
- case 1: servidorr->subMenu();
- break;
-  // case 2: servidorr->RegistrodeAcrividades();
- //break;
-   case 3: servidorr->CerrarSocket;
- break;
- default:printf("no es una opcion valida");
- break;
-    }
- }
-list<Credencial> credencial = FuncionArchivoEnEstructura();
-Servidorr->Credenciales(Servidorr);
-
- //Servidorr->TraductorCliente();
-    // Cargar las credenciales desde el archivo
-
-
-    // Imprimir las credenciales cargadas (solo como ejemplo)
-
-    //return 0;
-    }*/
-

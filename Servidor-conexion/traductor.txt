@@ -1,4 +1,6 @@
 dog:perro
 potato:papa
 plant:planta
-paka:alta
+paka:altaaa:ll
+
+aa:llppp

@@ -1,4 +1,4 @@
-persona1|potasio|CONSULTA|0
+persona1|potasio|CONSULTA|1
 persona2|pizza|CONSULTA|0
 persona3|tos8|CONSULTA|0
 juan|paracaidas|ADMIN|0
