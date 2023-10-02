@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1696214682 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
+1696220093 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
 	<iostream>
 	<winsock2.h>
 	<vector>

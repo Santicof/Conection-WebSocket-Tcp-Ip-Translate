@@ -1,6 +1,9 @@
-persona1|potasio|CONSULTA|1
-persona2|pizza|CONSULTA|0
-persona3|tos8|CONSULTA|0
-juan|paracaidas|ADMIN|0
+admin|ryc@UNLa.2023|ADMIN|1
 
-juancito|perez|CONSULTA|0
+
+carlos|abc123|CONSULTA|3
+
+roberto|123abc|CONSULTA|0
+romina|romualda|CONSULTA|0
+
+micaela|L4ffont|CONSULTA|0

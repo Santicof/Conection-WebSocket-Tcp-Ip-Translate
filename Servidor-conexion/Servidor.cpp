@@ -260,7 +260,12 @@ printf("NOMBRE USUARIO ALTA RECIBIDO: %s",buffer);
     // memset(buffer,0,sizeof(buffer));
      pala=ConvertirAMinusculas(buffer);//transformo el buffer a string y valido que no este escrito
       //VERIFICA SI ESTA LA PALABRA YA ESTA ESCRITA EN EL TRADUCTOR
-
+    // Verificar que las palabras no estén vacías
+    if (pala.empty() ) {
+       mensaje= "\nError: Las palabras deben tener contenido.";
+        send(client, mensaje, strlen(mensaje), 0);
+        return;
+    }
     if (buscarUsuario(pala)==true) {
             //creo un string para convertir en char
        string mensajeAux = "\nError al dar de alta el nuevo usuario: " + pala + " YA EXISTE";

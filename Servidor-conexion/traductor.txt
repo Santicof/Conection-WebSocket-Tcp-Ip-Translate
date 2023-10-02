@@ -1,6 +1,4 @@
-dog:perro
-potato:papa
-plant:planta
-paka:altaaa:ll
 
-aa:llppp
+university:universidad
+dog:perro
+cat:gato
