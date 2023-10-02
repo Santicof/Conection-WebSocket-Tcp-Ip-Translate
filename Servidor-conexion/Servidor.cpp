@@ -1,16 +1,28 @@
 #include <iostream>
 #include <winsock2.h>
 #include <vector>
-#include <fstream>   // Agrega esta l�nea
+#include <fstream>
 #include <sstream>
 #include <list>
 #include "Credencial.h"
 #include <algorithm> // Necesario para std::transform
 #include <thread>
-//BUENA PRACTICA FUNCIONES EN MINUSCULA
+#include <ctime>
 
 using namespace std;
+std::string horaActual() {
+    // Obtiene la hora actual
+    std::time_t tiempoActual = std::time(nullptr);
 
+    // Convierte la hora actual en una estructura tm
+    std::tm* tiempoInfo = std::localtime(&tiempoActual);
+
+    // Formatea la hora actual como una cadena
+    char buffer[80];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tiempoInfo);
+
+    return std::string(buffer);
+}
 class Servidor{
 public:
     WSADATA WSAData;
@@ -27,28 +39,38 @@ public:
     serverAddr.sin_family=AF_INET;
     serverAddr.sin_port=htons(5005);
 
+
     bind(server,(SOCKADDR *)&serverAddr, sizeof(serverAddr));
+    /*La función bind() utilizada asocia una dirección local con el socket.
+        En este caso estamos especificando que el socket deberá recibir llamadas entrantes en cuyo port destino se especifice 5005.*/
     listen(server,0);
     cout <<"ESCUCHANDO CONEXIONES ENTRANTES."<<endl;
-    int clientAddrSize=sizeof(clientAddr);
-    if((client=accept(server,(SOCKADDR *)&clientAddr,&clientAddrSize)) != INVALID_SOCKET){
-        cout<< "Cliente conectado!" << endl;
-    }
-    }
-
-
-
-
-
-   void AceptarConexiones() {
-        while (true) {
-            int clientAddrSize = sizeof(clientAddr);
-            if ((client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize)) != INVALID_SOCKET) {
-                cout << "Cliente conectado!" << endl;
-               // thread t(&Servidor::ManejarCliente, this);
-               // t.detach(); // Ejecutar el hilo de manera independiente
-            }
+     ofstream archivo;//se crea el archivo de server.log con los datos de horaActual y el puerto
+        archivo.open("server.log.txt"); //out para crear
+        //-----------------------log archivo---------------------------------
+        if(archivo.fail()){
+            cout<<"No se pudo abrir el archivo";
+            exit(1);
         }
+
+        archivo<<horaActual() << ": =============================\n";
+        archivo<<horaActual() << ": =======Inicia Servidor=======\n";
+        archivo<<horaActual() << ": =============================\n";
+        archivo<<horaActual() << ":====== Socket creado. Puerto de escucha: 5005=======" << "\n";
+
+        int clientAddrSize = sizeof(clientAddr);
+        if((client = accept(server, (SOCKADDR *)&clientAddr, &clientAddrSize)) != INVALID_SOCKET){
+
+            cout << "\n----------El cliente se ha conectado!----------\n\n" << endl;
+            archivo<<horaActual() << ": Conexion Aceptada\n";
+
+        }else{
+         cout << "\n----------El cliente no se ha conectado!----------\n\n" << endl;
+            archivo<<horaActual() << ": Conexion Interrumpida\n";
+
+        }
+
+        archivo.close();
     }
 
 
@@ -79,6 +101,8 @@ public:
     }
 //[----------------------------------CREDENCIALE VALIDACIONES DE USUARIOS------------------------------------------------------]--
 int Credenciales(Servidor* servidor) {
+      ofstream archivo;
+        archivo.open("server.log.txt",ios::app);
     list<Credencial> credencial = FuncionArchivoEnEstructura();
     bool valor = false;
     int num;
@@ -86,7 +110,7 @@ int Credenciales(Servidor* servidor) {
     int intentos = 0; // Inicializamos el contador de intentos
 
 
-        // Env�o
+        // Envio
         send(client, "Nombre Usuario?", sizeof(buffer), 0);
         memset(buffer, 0, sizeof(buffer));
         cout << "Mensaje enviado!" << endl;
@@ -102,6 +126,14 @@ int Credenciales(Servidor* servidor) {
 
         num = verificarRol(usuario);
         valor = buscadorDeUsuario(credencial, buffer); // Busca dentro de la lista el usuario y devuelve un booleano
+         if(num==1){
+                string archi= "INICIO DE SESION:usuario CONSULTA:\n";
+            archivo<<horaActual() << archi;
+         }else{
+
+          archivo<<horaActual() << "INICIO DE SESION:usuario Admin\n";
+         }
+
 
         memset(servidor->buffer, 0, sizeof(servidor->buffer)); // Borra el buffer
 
@@ -318,8 +350,8 @@ void TraductorCliente(){
 
     buffer[bytesRecibidos] = '\0'; // A�ade el car�cter nulo al final del mensaje recibido
 
-    std::cout << "Palabra a Traducir: " << buffer << std::endl;
-    std::cout << "Traduzco entonces..." << std::endl;
+  //  std::cout << "Palabra a Traducir: " << buffer << std::endl;
+   // std::cout << "Traduzco entonces..." << std::endl;
 
 //  ----------  Traductor(buffer);
       Traductor(ConvertirAMinusculas(buffer));//se convierte el texto antes de buscar
@@ -334,6 +366,29 @@ std::string ConvertirAMinusculas(const std::string& texto) {
 
 
 
+#include <fstream>
+
+// ...
+
+void VerRegistroActividades() {
+    std::ifstream registroFile("server.log.txt");
+
+    if (!registroFile.is_open()) {
+        send(client, "No se pudo abrir el archivo de registro de actividades.", sizeof(buffer), 0);
+        return;
+    }
+
+    std::string registroContent((std::istreambuf_iterator<char>(registroFile)),
+                                 std::istreambuf_iterator<char>());
+
+    registroFile.close();
+
+    if (!registroContent.empty()) {
+        send(client, registroContent.c_str(), registroContent.size(), 0);
+    } else {
+        send(client, "El registro de actividades está vacío.", sizeof(buffer), 0);
+    }
+}
 
 
   //--------------------------INSERTAR TRADUCCIONNN--------------------------------------
@@ -520,6 +575,7 @@ void MenuAdmin(Servidor*servidorr){
               servidorr->MenuUsuarios(servidorr);
                 break;
             case 2://REGISTRO ACTIVIDADES
+                servidorr->VerRegistroActividades();
                 break;
             case 3://CERRAR SESION
                 CerrarSocket();
@@ -566,7 +622,7 @@ void MenuCliente(Servidor* servidorr) {
 
  Servidor *servidorr =new Servidor();
   // Inicia un hilo para aceptar conexiones entrantes
-    thread acceptThread(&Servidor::AceptarConexiones, servidorr);
+
  string usuario;
  int num;
  num=servidorr->Credenciales(servidorr);
@@ -581,6 +637,6 @@ if(num==1){
 if(num==2){
     servidorr->MenuAdmin(servidorr);
 }
-acceptThread.join();
+
 return 0;
 }

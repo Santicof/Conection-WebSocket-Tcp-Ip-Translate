@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1696202870 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
+1696214682 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\servidor.cpp
 	<iostream>
 	<winsock2.h>
 	<vector>
@@ -9,11 +9,13 @@
 	"Credencial.h"
 	<algorithm>
 	<thread>
+	<ctime>
+	<fstream>
 
 1584205420 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\main.cpp
 	<iostream>
 
-1696173915 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
+1696213393 source:c:\users\alberto\desktop\servidor-conexion\servidor-conexion\credencial.cpp
 	<iostream>
 	<vector>
 	<fstream>

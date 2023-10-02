@@ -85,7 +85,7 @@ int verificarRol(std::string nombre) {
     for (const Credencial& credencial : credenciales) {
         if (credencial.usuario == nombre) {
             if (credencial.rol == "CONSULTA") {
-                    printf("es consultaa");
+
                 num = 1;
             }
         }
